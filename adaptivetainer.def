@@ -1,0 +1,19 @@
+Bootstrap: docker
+From: docker.io/library/almalinux:9
+
+%post
+    dnf install -y epel-release
+    dnf config-manager --set-enabled crb
+    dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo
+    dnf clean all
+    dnf install -y ninja-build cmake \
+        git gcc-c++ make \
+        boost-devel clang-devel llvm-devel \
+        cuda-toolkit nsight-compute
+    dnf distro-sync -y
+
+    git clone https://github.com/AdaptiveCpp/AdaptiveCpp --depth 1
+    cd AdaptiveCpp
+    cmake -B build -DWITH_CUDA_BACKEND=ON -GNinja
+    cmake --build build -j 8
+    cmake --install build
